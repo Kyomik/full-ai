@@ -1,0 +1,24 @@
+diff --git a/app/Providers/Filament/Concerns/BuildsAdminPanel.php b/app/Providers/Filament/Concerns/BuildsAdminPanel.php
+index ec9051b..9239636 100644
+--- a/app/Providers/Filament/Concerns/BuildsAdminPanel.php
++++ b/app/Providers/Filament/Concerns/BuildsAdminPanel.php
+@@ -26,6 +26,7 @@ protected function configureAdminPanel(Panel $panel, string $id, string $path, s
+             ->login($loginPage)
+             ->passwordReset()
+             ->brandName('Sistem Informasi Festival & Event Budaya Kota Palopo')
++            ->favicon(asset('images/palopo-seal.jpeg'))
+             ->simplePageMaxContentWidth('5xl')
+             ->sidebarCollapsibleOnDesktop()
+             ->spa()
+diff --git a/resources/views/layouts/portal.blade.php b/resources/views/layouts/portal.blade.php
+index a62343c..540c1bf 100644
+--- a/resources/views/layouts/portal.blade.php
++++ b/resources/views/layouts/portal.blade.php
+@@ -5,6 +5,7 @@
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <meta name="theme-color" content="#173c30">
+     <meta name="description" content="Informasi festival, event, dan budaya Kota Palopo.">
++    <link rel="icon" type="image/jpeg" href="{{ asset('images/palopo-seal.jpeg') }}">
+     <link rel="stylesheet" href="{{ asset('css/proposal-ui.css') }}?v={{ filemtime(public_path('css/proposal-ui.css')) }}">
+     <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ filemtime(public_path('css/forms.css')) }}">
+     <link rel="stylesheet" href="{{ asset('css/portal-layout.css') }}?v={{ filemtime(public_path('css/portal-layout.css')) }}">

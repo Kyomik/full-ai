@@ -7,6 +7,7 @@ use Filament\Widgets\Widget;
 
 class UpcomingEvents extends Widget
 {
+    protected static bool $isLazy = false;
     protected static ?int $sort = 5;
     protected static string $view = 'filament.widgets.upcoming-events';
     protected int|string|array $columnSpan = ['default' => 1, 'md' => 4];

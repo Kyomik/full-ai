@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 
 class EventSubmissionsChart extends ChartWidget
 {
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Grafik Event per Bulan';
     protected static ?int $sort = 2;
     protected static ?string $maxHeight = '240px';

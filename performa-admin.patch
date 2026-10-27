@@ -1,0 +1,303 @@
+diff --git a/app/Filament/Pages/Reports.php b/app/Filament/Pages/Reports.php
+index c1c3d04..397512e 100644
+--- a/app/Filament/Pages/Reports.php
++++ b/app/Filament/Pages/Reports.php
+@@ -57,10 +57,9 @@ public function getBreadcrumbs(): array
+ 
+     protected function getViewData(): array
+     {
+-        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null, auth()->id());
++        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null, auth()->id(), $this->reportType ?: null);
+         $reports = array_values(array_filter($reports, fn (array $report): bool =>
+-            ($this->reportType === '' || $report['type'] === $this->reportType)
+-            && ($this->statusFilter === '' || $report['status'] === $this->statusFilter)
++            $this->statusFilter === '' || $report['status'] === $this->statusFilter
+         ));
+ 
+         return ['reports' => $reports];
+diff --git a/app/Filament/Widgets/DonutBreakdown.php b/app/Filament/Widgets/DonutBreakdown.php
+index ee52d70..7c5d54e 100644
+--- a/app/Filament/Widgets/DonutBreakdown.php
++++ b/app/Filament/Widgets/DonutBreakdown.php
+@@ -6,6 +6,7 @@
+ 
+ abstract class DonutBreakdown extends ChartWidget
+ {
++    protected static bool $isLazy = false;
+     protected static ?string $maxHeight = '180px';
+ 
+     /** @return array<string, int> */
+diff --git a/app/Filament/Widgets/EventSubmissionsChart.php b/app/Filament/Widgets/EventSubmissionsChart.php
+index 1816519..1f81e7b 100644
+--- a/app/Filament/Widgets/EventSubmissionsChart.php
++++ b/app/Filament/Widgets/EventSubmissionsChart.php
+@@ -8,6 +8,7 @@
+ 
+ class EventSubmissionsChart extends ChartWidget
+ {
++    protected static bool $isLazy = false;
+     protected static ?string $heading = 'Grafik Event per Bulan';
+     protected static ?int $sort = 2;
+     protected static ?string $maxHeight = '240px';
+diff --git a/app/Filament/Widgets/PortalOverview.php b/app/Filament/Widgets/PortalOverview.php
+index 13e1689..dfba4a7 100644
+--- a/app/Filament/Widgets/PortalOverview.php
++++ b/app/Filament/Widgets/PortalOverview.php
+@@ -9,6 +9,7 @@
+ 
+ class PortalOverview extends BaseWidget
+ {
++    protected static bool $isLazy = false;
+     protected static string $view = 'filament.widgets.portal-overview';
+ 
+     protected int|string|array $columnSpan = 'full';
+diff --git a/app/Filament/Widgets/RecentActivity.php b/app/Filament/Widgets/RecentActivity.php
+index cc16d35..06a8148 100644
+--- a/app/Filament/Widgets/RecentActivity.php
++++ b/app/Filament/Widgets/RecentActivity.php
+@@ -9,6 +9,7 @@
+ 
+ class RecentActivity extends Widget
+ {
++    protected static bool $isLazy = false;
+     protected static ?int $sort = 6;
+     protected int|string|array $columnSpan = ['default' => 1, 'md' => 4];
+     protected static string $view = 'filament.widgets.recent-activity';
+@@ -23,11 +24,11 @@ protected function getViewData(): array
+         return [
+             'allActivitiesUrl' => CulturalEventResource::getUrl('index'),
+             'activities' => collect()
+-                ->concat(CulturalEvent::query()->latest()->limit(5)->get()->map(fn ($event) => [
++                ->concat(CulturalEvent::query()->select(['id', 'title', 'created_at'])->latest()->limit(5)->get()->map(fn ($event) => [
+                     'title' => 'Pengajuan event "' . $event->title . '"',
+                     'date' => $event->created_at,
+                 ]))
+-                ->concat(Article::query()->latest()->limit(5)->get()->map(fn ($article) => [
++                ->concat(Article::query()->select(['id', 'title', 'created_at'])->latest()->limit(5)->get()->map(fn ($article) => [
+                     'title' => 'Menambahkan berita "' . $article->title . '"',
+                     'date' => $article->created_at,
+                 ]))
+diff --git a/app/Filament/Widgets/RecentAnnouncements.php b/app/Filament/Widgets/RecentAnnouncements.php
+index 42889a2..36b7436 100644
+--- a/app/Filament/Widgets/RecentAnnouncements.php
++++ b/app/Filament/Widgets/RecentAnnouncements.php
+@@ -7,6 +7,7 @@
+ 
+ class RecentAnnouncements extends Widget
+ {
++    protected static bool $isLazy = false;
+     protected static ?int $sort = 5;
+     protected static string $view = 'filament.widgets.recent-announcements';
+     protected int|string|array $columnSpan = ['default' => 1, 'md' => 5];
+diff --git a/app/Filament/Widgets/RecentSubmissions.php b/app/Filament/Widgets/RecentSubmissions.php
+index 7b1330d..62266aa 100644
+--- a/app/Filament/Widgets/RecentSubmissions.php
++++ b/app/Filament/Widgets/RecentSubmissions.php
+@@ -12,6 +12,7 @@
+ 
+ class RecentSubmissions extends TableWidget
+ {
++    protected static bool $isLazy = false;
+     protected static ?string $heading = 'Pengajuan Terbaru';
+     protected static ?int $sort = 4;
+     public function getColumnSpan(): int|string|array
+diff --git a/app/Filament/Widgets/UpcomingEvents.php b/app/Filament/Widgets/UpcomingEvents.php
+index 9f3d7bc..3113d9a 100644
+--- a/app/Filament/Widgets/UpcomingEvents.php
++++ b/app/Filament/Widgets/UpcomingEvents.php
+@@ -7,6 +7,7 @@
+ 
+ class UpcomingEvents extends Widget
+ {
++    protected static bool $isLazy = false;
+     protected static ?int $sort = 5;
+     protected static string $view = 'filament.widgets.upcoming-events';
+     protected int|string|array $columnSpan = ['default' => 1, 'md' => 4];
+diff --git a/app/Notifications/AdminBroadcastNotification.php b/app/Notifications/AdminBroadcastNotification.php
+index 2dc34b7..751aab4 100644
+--- a/app/Notifications/AdminBroadcastNotification.php
++++ b/app/Notifications/AdminBroadcastNotification.php
+@@ -2,6 +2,7 @@
+ 
+ namespace App\Notifications;
+ 
++use App\Notifications\Channels\ReadDatabaseChannel;
+ use Illuminate\Bus\Queueable;
+ use Illuminate\Notifications\Notification;
+ 
+@@ -22,7 +23,11 @@ public function __construct(
+ 
+     public function via(object $notifiable): array
+     {
+-        return ['database'];
++        // Penerima (admin instansi) memakai channel biasa. Baris tracking milik
++        // pengirim langsung ditandai terbaca agar tidak menumpuk di query bell.
++        return ($notifiable->role ?? null) === 'agency_admin'
++            ? ['database']
++            : [ReadDatabaseChannel::class];
+     }
+ 
+     public function toDatabase(object $notifiable): array
+diff --git a/app/Notifications/Channels/ReadDatabaseChannel.php b/app/Notifications/Channels/ReadDatabaseChannel.php
+new file mode 100644
+index 0000000..9628650
+--- /dev/null
++++ b/app/Notifications/Channels/ReadDatabaseChannel.php
+@@ -0,0 +1,23 @@
++<?php
++
++namespace App\Notifications\Channels;
++
++use Illuminate\Notifications\Channels\DatabaseChannel;
++use Illuminate\Notifications\Notification;
++
++/**
++ * Database channel yang langsung menandai baris notifikasi sebagai sudah dibaca.
++ *
++ * Dipakai untuk baris "tracking" broadcast milik pengirim (Super Admin). Baris
++ * itu tidak pernah tampil di bell, sehingga kalau dibiarkan belum dibaca ia
++ * menumpuk di himpunan `read_at IS NULL` yang di-scan bell di setiap halaman.
++ */
++class ReadDatabaseChannel extends DatabaseChannel
++{
++    protected function buildPayload($notifiable, Notification $notification)
++    {
++        return array_merge(parent::buildPayload($notifiable, $notification), [
++            'read_at' => now(),
++        ]);
++    }
++}
+diff --git a/app/Providers/Filament/Concerns/BuildsAdminPanel.php b/app/Providers/Filament/Concerns/BuildsAdminPanel.php
+index 06c54d3..0d924d6 100644
+--- a/app/Providers/Filament/Concerns/BuildsAdminPanel.php
++++ b/app/Providers/Filament/Concerns/BuildsAdminPanel.php
+@@ -29,7 +29,7 @@ protected function configureAdminPanel(Panel $panel, string $id, string $path, s
+             ->simplePageMaxContentWidth('5xl')
+             ->sidebarCollapsibleOnDesktop()
+             ->spa()
+-            ->databaseNotifications(isLazy: true)
++            ->databaseNotifications(isLazy: false)
+             // The notification bell is present on every panel page. Poll less
+             // often so it does not contend with SPA navigation requests.
+             ->databaseNotificationsPolling('60s')
+diff --git a/app/Services/ReportCatalog.php b/app/Services/ReportCatalog.php
+index df9d6ad..1d7fa21 100644
+--- a/app/Services/ReportCatalog.php
++++ b/app/Services/ReportCatalog.php
+@@ -15,6 +15,7 @@
+ use App\Notifications\AdminBroadcastNotification;
+ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+ use Illuminate\Database\Query\Builder as QueryBuilder;
++use Illuminate\Support\Carbon;
+ use Illuminate\Support\Facades\DB;
+ use Maatwebsite\Excel\Facades\Excel;
+ use Illuminate\Support\Str;
+@@ -77,22 +78,35 @@ public function definitions(): array
+         ];
+     }
+ 
+-    public function reports(?string $from, ?string $until, ?int $userId = null): array
++    /**
++     * @param  string|null  $onlyType  Batasi hanya satu jenis laporan agar tidak menghitung yang tidak ditampilkan.
++     */
++    public function reports(?string $from, ?string $until, ?int $userId = null, ?string $onlyType = null): array
+     {
+         $definitions = $this->definitions();
+ 
++        if ($onlyType !== null && $onlyType !== '') {
++            $definitions = array_intersect_key($definitions, [$onlyType => true]);
++        }
++
++        // Satu query untuk seluruh status unduhan, bukan satu query per jenis laporan.
++        $downloads = $userId && $definitions !== []
++            ? ReportDownload::query()
++                ->where('user_id', $userId)
++                ->whereIn('report_type', array_keys($definitions))
++                ->where('period_from', $from)
++                ->where('period_until', $until)
++                ->orderByDesc('updated_at')
++                ->get()
++                ->unique('report_type')
++                ->keyBy('report_type')
++            : collect();
++
+         foreach ($definitions as $type => &$definition) {
++            $download = $downloads->get($type);
++
+             $definition['type'] = $type;
+             $definition['count'] = $this->query($type, $from, $until)->count();
+-            $download = $userId
+-                ? ReportDownload::query()
+-                    ->where('user_id', $userId)
+-                    ->where('report_type', $type)
+-                    ->where('period_from', $from)
+-                    ->where('period_until', $until)
+-                    ->latest('updated_at')
+-                    ->first()
+-                : null;
+             $definition['status'] = $download?->status ?? 'not_downloaded';
+             $definition['downloaded_at'] = $download?->downloaded_at;
+             $definition['status_label'] = match ($definition['status']) {
+@@ -201,9 +215,28 @@ private function query(string $type, ?string $from, ?string $until): EloquentBui
+ 
+         $dateColumn = $this->definitions()[$type]['date_column'];
+ 
++        $start = $this->boundary($from, false);
++        $end = $this->boundary($until, true);
++
++        // Rentang langsung pada kolom (bukan DATE(kolom)) supaya indeks bisa dipakai.
+         return $query
+-            ->when($from, fn ($query) => $query->whereDate($dateColumn, '>=', $from))
+-            ->when($until, fn ($query) => $query->whereDate($dateColumn, '<=', $until));
++            ->when($start, fn ($query) => $query->where($dateColumn, '>=', $start))
++            ->when($end, fn ($query) => $query->where($dateColumn, '<=', $end));
++    }
++
++    private function boundary(?string $date, bool $endOfDay): ?Carbon
++    {
++        if (! $date) {
++            return null;
++        }
++
++        try {
++            $parsed = Carbon::parse($date);
++        } catch (\Throwable) {
++            return null;
++        }
++
++        return $endOfDay ? $parsed->endOfDay() : $parsed->startOfDay();
+     }
+ 
+     private function recordValues(object $record, string $type): array
+diff --git a/database/migrations/2026_10_28_000001_mark_broadcast_tracking_notifications_read.php b/database/migrations/2026_10_28_000001_mark_broadcast_tracking_notifications_read.php
+new file mode 100644
+index 0000000..c00ce7c
+--- /dev/null
++++ b/database/migrations/2026_10_28_000001_mark_broadcast_tracking_notifications_read.php
+@@ -0,0 +1,26 @@
++<?php
++
++use App\Notifications\AdminBroadcastNotification;
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Support\Facades\DB;
++
++return new class extends Migration
++{
++    /**
++     * Baris tracking broadcast milik pengirim tidak pernah tampil di bell,
++     * jadi tidak pernah ditandai terbaca dan terus menumpuk. Tandai yang lama.
++     */
++    public function up(): void
++    {
++        DB::table('notifications')
++            ->where('type', AdminBroadcastNotification::class)
++            ->whereNull('read_at')
++            ->where('data->format', 'admin_broadcast_tracking')
++            ->update(['read_at' => now()]);
++    }
++
++    public function down(): void
++    {
++        // Tidak ada yang perlu dikembalikan: baris ini memang tidak pernah ditampilkan.
++    }
++};

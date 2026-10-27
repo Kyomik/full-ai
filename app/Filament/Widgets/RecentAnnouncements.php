@@ -7,6 +7,7 @@ use Filament\Widgets\Widget;
 
 class RecentAnnouncements extends Widget
 {
+    protected static bool $isLazy = false;
     protected static ?int $sort = 5;
     protected static string $view = 'filament.widgets.recent-announcements';
     protected int|string|array $columnSpan = ['default' => 1, 'md' => 5];

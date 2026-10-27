@@ -57,10 +57,9 @@ class Reports extends Page
 
     protected function getViewData(): array
     {
-        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null, auth()->id());
+        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null, auth()->id(), $this->reportType ?: null);
         $reports = array_values(array_filter($reports, fn (array $report): bool =>
-            ($this->reportType === '' || $report['type'] === $this->reportType)
-            && ($this->statusFilter === '' || $report['status'] === $this->statusFilter)
+            $this->statusFilter === '' || $report['status'] === $this->statusFilter
         ));
 
         return ['reports' => $reports];

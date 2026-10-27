@@ -6,6 +6,7 @@ use Filament\Widgets\ChartWidget;
 
 abstract class DonutBreakdown extends ChartWidget
 {
+    protected static bool $isLazy = false;
     protected static ?string $maxHeight = '180px';
 
     /** @return array<string, int> */

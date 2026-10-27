@@ -26,10 +26,11 @@ trait BuildsAdminPanel
             ->login($loginPage)
             ->passwordReset()
             ->brandName('Sistem Informasi Festival & Event Budaya Kota Palopo')
+	    ->favicon(asset('images/palopo-seal.jpeg'))
             ->simplePageMaxContentWidth('5xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()
-            ->databaseNotifications(isLazy: true)
+            ->databaseNotifications(isLazy: false)
             // The notification bell is present on every panel page. Poll less
             // often so it does not contend with SPA navigation requests.
             ->databaseNotificationsPolling('60s')
@@ -44,6 +45,10 @@ trait BuildsAdminPanel
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn () => view('filament.components.breadcrumb-styles'),
+            )
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn () => view('filament.components.admin-panel-styles'),
             )
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_NAV_END,

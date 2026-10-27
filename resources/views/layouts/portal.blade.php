@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#173c30">
     <meta name="description" content="Informasi festival, event, dan budaya Kota Palopo.">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/palopo-seal.jpeg') }}">
     <link rel="stylesheet" href="{{ asset('css/proposal-ui.css') }}?v={{ filemtime(public_path('css/proposal-ui.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ filemtime(public_path('css/forms.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/portal-layout.css') }}?v={{ filemtime(public_path('css/portal-layout.css')) }}">

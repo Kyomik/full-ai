@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\ReadDatabaseChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -22,7 +23,11 @@ class AdminBroadcastNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        // Penerima (admin instansi) memakai channel biasa. Baris tracking milik
+        // pengirim langsung ditandai terbaca agar tidak menumpuk di query bell.
+        return ($notifiable->role ?? null) === 'agency_admin'
+            ? ['database']
+            : [ReadDatabaseChannel::class];
     }
 
     public function toDatabase(object $notifiable): array

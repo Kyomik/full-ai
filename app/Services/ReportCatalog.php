@@ -15,6 +15,7 @@ use App\Exports\ReportsWorkbook;
 use App\Notifications\AdminBroadcastNotification;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Str;
@@ -77,22 +78,35 @@ class ReportCatalog
         ];
     }
 
-    public function reports(?string $from, ?string $until, ?int $userId = null): array
+    /**
+     * @param  string|null  $onlyType  Batasi hanya satu jenis laporan agar tidak menghitung yang tidak ditampilkan.
+     */
+    public function reports(?string $from, ?string $until, ?int $userId = null, ?string $onlyType = null): array
     {
         $definitions = $this->definitions();
 
+        if ($onlyType !== null && $onlyType !== '') {
+            $definitions = array_intersect_key($definitions, [$onlyType => true]);
+        }
+
+        // Satu query untuk seluruh status unduhan, bukan satu query per jenis laporan.
+        $downloads = $userId && $definitions !== []
+            ? ReportDownload::query()
+                ->where('user_id', $userId)
+                ->whereIn('report_type', array_keys($definitions))
+                ->where('period_from', $from)
+                ->where('period_until', $until)
+                ->orderByDesc('updated_at')
+                ->get()
+                ->unique('report_type')
+                ->keyBy('report_type')
+            : collect();
+
         foreach ($definitions as $type => &$definition) {
+            $download = $downloads->get($type);
+
             $definition['type'] = $type;
             $definition['count'] = $this->query($type, $from, $until)->count();
-            $download = $userId
-                ? ReportDownload::query()
-                    ->where('user_id', $userId)
-                    ->where('report_type', $type)
-                    ->where('period_from', $from)
-                    ->where('period_until', $until)
-                    ->latest('updated_at')
-                    ->first()
-                : null;
             $definition['status'] = $download?->status ?? 'not_downloaded';
             $definition['downloaded_at'] = $download?->downloaded_at;
             $definition['status_label'] = match ($definition['status']) {
@@ -201,9 +215,28 @@ class ReportCatalog
 
         $dateColumn = $this->definitions()[$type]['date_column'];
 
+        $start = $this->boundary($from, false);
+        $end = $this->boundary($until, true);
+
+        // Rentang langsung pada kolom (bukan DATE(kolom)) supaya indeks bisa dipakai.
         return $query
-            ->when($from, fn ($query) => $query->whereDate($dateColumn, '>=', $from))
-            ->when($until, fn ($query) => $query->whereDate($dateColumn, '<=', $until));
+            ->when($start, fn ($query) => $query->where($dateColumn, '>=', $start))
+            ->when($end, fn ($query) => $query->where($dateColumn, '<=', $end));
+    }
+
+    private function boundary(?string $date, bool $endOfDay): ?Carbon
+    {
+        if (! $date) {
+            return null;
+        }
+
+        try {
+            $parsed = Carbon::parse($date);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $endOfDay ? $parsed->endOfDay() : $parsed->startOfDay();
     }
 
     private function recordValues(object $record, string $type): array

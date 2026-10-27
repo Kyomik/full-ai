@@ -12,6 +12,7 @@ use Illuminate\Support\HtmlString;
 
 class RecentSubmissions extends TableWidget
 {
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Pengajuan Terbaru';
     protected static ?int $sort = 4;
     public function getColumnSpan(): int|string|array

@@ -9,6 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class PortalOverview extends BaseWidget
 {
+    protected static bool $isLazy = false;
     protected static string $view = 'filament.widgets.portal-overview';
 
     protected int|string|array $columnSpan = 'full';
