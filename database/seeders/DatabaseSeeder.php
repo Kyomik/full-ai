@@ -12,7 +12,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(CategorySeeder::class);
-        $this->call(VerificationDemoSeeder::class);
+        $this->call([
+            AgencySeeder::class,
+            CategorySeeder::class,
+            LocationSeeder::class,
+            CulturalEventSeeder::class,
+            CalendarCollisionSeeder::class,
+            EventDocumentSeeder::class,
+            ArticleSeeder::class,
+            GalleryItemSeeder::class,
+            BroadcastNotificationSeeder::class,
+        ]);
     }
 }

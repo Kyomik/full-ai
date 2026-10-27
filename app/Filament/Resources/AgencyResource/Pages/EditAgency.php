@@ -13,7 +13,11 @@ class EditAgency extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->disabled(fn (\App\Models\Agency $record): bool => $record->events()->exists())
+                ->tooltip(fn (\App\Models\Agency $record): ?string => $record->events()->exists()
+                    ? 'Instansi masih memiliki festival atau event. Nonaktifkan instansi jika tidak ingin digunakan lagi.'
+                    : null),
         ];
     }
 }

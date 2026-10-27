@@ -9,9 +9,9 @@
             <h1>{{ $article->title }}</h1>
             @if($article->image)<img class="detail-poster" src="{{ asset('storage/'.$article->image) }}" alt="{{ $article->title }}">@endif
             @if($article->excerpt)<p class="detail-lead">{{ $article->excerpt }}</p>@endif
-            <div class="rich-copy">{!! nl2br(e(strip_tags($article->body))) !!}</div>
+            <div class="rich-copy">{!! \App\Support\RichText::sanitize($article->body) !!}</div>
         </div>
-        <aside class="content-sidebar"><section class="sidebar-box"><h2>Berita lainnya</h2>@forelse($related as $item)<a class="popular-item" href="{{ route('news.show',$item) }}"><span><strong>{{ $item->title }}</strong><small>{{ $item->published_at->translatedFormat('d F Y') }}</small></span></a>@empty<p>Belum ada berita lain.</p>@endforelse<a class="sidebar-all" href="{{ route('news.index') }}">Lihat semua berita →</a></section></aside>
+        <aside class="content-sidebar"><section class="sidebar-box"><h2>Berita lainnya</h2>@forelse($related as $item)<a class="popular-item" href="{{ route('news.show',$item) }}"><span><strong>{{ $item->title }}</strong><small>{{ $item->published_at->translatedFormat('d F Y') }}</small></span></a>@empty<p>Belum ada berita lain.</p>@endforelse@if($related->isNotEmpty())<a class="sidebar-all" href="{{ route('news.index') }}">Lihat semua berita →</a>@endif</section></aside>
     </article>
 </div>
 @endsection

@@ -88,6 +88,15 @@
         if (!select) return;
         select.innerHTML = `<option value="">${prompt}</option>`;
         select.disabled = true;
+        select.removeAttribute('aria-busy');
+        select.closest('.register-field')?.querySelector('[data-region-loading]')?.setAttribute('hidden', '');
+    };
+
+    const setRegionLoading = (select, loading) => {
+        if (!select) return;
+        const indicator = select.closest('.register-field')?.querySelector('[data-region-loading]');
+        select.toggleAttribute('aria-busy', loading);
+        indicator?.toggleAttribute('hidden', !loading);
     };
 
     const loadRegions = async (index, parentId = null) => {
@@ -96,6 +105,7 @@
 
         select.innerHTML = '<option value="">Memuat data wilayah...</option>';
         select.disabled = true;
+        setRegionLoading(select, true);
 
         try {
             const path = `/api/wilayah/${levels[index]}${parentId ? `/${encodeURIComponent(parentId)}` : ''}`;
@@ -111,12 +121,14 @@
                 select.append(option);
             });
             select.disabled = false;
+            setRegionLoading(select, false);
             if (select.dataset.oldValue && rows.some((row) => String(row.id) === select.dataset.oldValue)) {
                 select.value = select.dataset.oldValue;
                 select.dispatchEvent(new Event('change', { bubbles: true }));
             }
         } catch {
             select.innerHTML = '<option value="">Data wilayah gagal dimuat</option>';
+            setRegionLoading(select, false);
             if (regionError) regionError.hidden = false;
         }
     };

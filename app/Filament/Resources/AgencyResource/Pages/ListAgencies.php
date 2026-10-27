@@ -3,19 +3,18 @@
 namespace App\Filament\Resources\AgencyResource\Pages;
 
 use App\Filament\Resources\AgencyResource;
-use Filament\Actions;
+use App\Models\AgencyType;
+use Filament\Pages\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListAgencies extends ListRecords
-    protected static bool $lazy = true;
 {
-    protected static bool $lazy = true;
-
     protected static string $resource = AgencyResource::class;
-
     protected static string $view = 'filament.resources.agencies.pages.list';
 
     public string $typeFilter = '';
@@ -46,12 +45,10 @@ class ListAgencies extends ListRecords
 
     public function getAgencyTypes(): array
     {
-        return \App\Models\Agency::query()
-            ->whereNotNull('type')
-            ->where('type', '!=', '')
-            ->distinct()
-            ->orderBy('type')
-            ->pluck('type', 'type')
+        return AgencyType::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->pluck('name', 'name')
             ->all();
     }
 
@@ -65,18 +62,37 @@ class ListAgencies extends ListRecords
 
     public function table(Table $table): Table
     {
-        return parent::table($table)
-            ->modifyQueryUsing(function (Builder $query): Builder {
-                return $query
-                    ->when($this->typeFilter !== '', fn (Builder $query) => $query->where('type', $this->typeFilter))
-                    ->when($this->statusFilter !== '', fn (Builder $query) => $query->where('status', $this->statusFilter));
-            });
+        return parent::table($table)->deferLoading()->modifyQueryUsing(function (Builder $query): Builder {
+            return $query
+                ->when($this->typeFilter !== '', fn (Builder $q) => $q->where('type', $this->typeFilter))
+                ->when($this->statusFilter !== '', fn (Builder $q) => $q->where('status', $this->statusFilter));
+        });
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Tambah Instansi'),
+            CreateAction::make()->label('Tambah Instansi')->url(AgencyResource::getUrl('create')),
+        ];
+    }
+
+    protected function getTableActions(): array
+    {
+        return [
+            EditAction::make()
+                ->extraAttributes([
+                    'wire:loading.attr' => 'disabled',
+                    'wire:loading.class' => 'opacity-50',
+                ]),
+            DeleteAction::make()
+                ->disabled(fn (\App\Models\Agency $record): bool => $record->events()->exists())
+                ->tooltip(fn (\App\Models\Agency $record): ?string => $record->events()->exists()
+                    ? 'Instansi masih memiliki festival atau event. Nonaktifkan instansi jika tidak ingin digunakan lagi.'
+                    : null)
+                ->extraAttributes([
+                    'wire:loading.attr' => 'disabled',
+                    'wire:loading.class' => 'opacity-50',
+                ]),
         ];
     }
 }

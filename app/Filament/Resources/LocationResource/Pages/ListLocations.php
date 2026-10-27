@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListLocations extends ListRecords
 {
+
     protected static string $resource = LocationResource::class;
     protected static string $view = 'filament.resources.locations.pages.list';
 
@@ -56,13 +57,13 @@ class ListLocations extends ListRecords
 
     public function table(Table $table): Table
     {
-        return parent::table($table)->modifyQueryUsing(fn (Builder $query): Builder => $query
+        return parent::table($table)->deferLoading()->modifyQueryUsing(fn (Builder $query): Builder => $query
             ->when($this->categoryFilter !== '', fn (Builder $query): Builder => $query->where('type', $this->categoryFilter))
             ->when($this->statusFilter !== '', fn (Builder $query): Builder => $query->where('status', $this->statusFilter)));
     }
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()->label('Tambah Lokasi')];
+        return [Actions\CreateAction::make()->label('Tambah Lokasi')->url(LocationResource::getUrl('create'))];
     }
 }

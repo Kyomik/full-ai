@@ -26,17 +26,10 @@
 
         <div class="resource-filter-field gallery-filter-date">
             <label>Tanggal Unggah</label>
-            <div class="resource-filter-date-fields">
-                <input type="date" aria-label="Tanggal unggah awal" wire:model.live="uploadedFrom">
-                <span>-</span>
-                <input type="date" aria-label="Tanggal unggah akhir" wire:model.live="uploadedUntil">
-            </div>
+            <x-resource-filter-date-range from="uploadedFrom" until="uploadedUntil" from-label="Tanggal unggah awal" until-label="Tanggal unggah akhir" />
         </div>
 
-        <button type="button" class="resource-filter-reset" wire:click="resetGalleryFilters">
-            <x-filament::icon icon="heroicon-o-arrow-path" />
-            Reset Filter
-        </button>
+        <x-resource-filter-reset action="resetGalleryFilters" />
     </x-resource-filter-panel>
 
     <div class="flex flex-col gap-y-6">

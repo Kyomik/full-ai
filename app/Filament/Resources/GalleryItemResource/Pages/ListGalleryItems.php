@@ -4,9 +4,12 @@ namespace App\Filament\Resources\GalleryItemResource\Pages;
 
 use App\Filament\Resources\GalleryItemResource;
 use App\Models\Category;
-use Filament\Actions;
+use Filament\Pages\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -45,7 +48,7 @@ class ListGalleryItems extends ListRecords
 
     public function getCategoryOptions(): array
     {
-        return Category::query()->orderBy('name')->pluck('name', 'id')->all();
+        return Category::query()->where('status', 'active')->orderBy('name')->pluck('name', 'id')->all();
     }
 
     public function resetGalleryFilters(): void
@@ -60,19 +63,44 @@ class ListGalleryItems extends ListRecords
 
     public function table(Table $table): Table
     {
-        return parent::table($table)->modifyQueryUsing(function (Builder $query): Builder {
+        return parent::table($table)->deferLoading()->modifyQueryUsing(function (Builder $query): Builder {
             return $query
-                ->when($this->categoryFilter !== '', fn (Builder $query): Builder => $query->whereHas('event', fn (Builder $eventQuery): Builder => $eventQuery->where('category_id', $this->categoryFilter)))
-                ->when($this->typeFilter !== '', fn (Builder $query): Builder => $query->where('type', $this->typeFilter))
-                ->when($this->uploadedFrom !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->uploadedFrom))
-                ->when($this->uploadedUntil !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->uploadedUntil));
+                ->when($this->categoryFilter !== '', fn (Builder $q) => $q->whereHas('event', fn (Builder $event) => $event->where('category_id', $this->categoryFilter)))
+                ->when($this->typeFilter !== '', fn (Builder $q) => $q->where('type', $this->typeFilter))
+                ->when($this->uploadedFrom !== '', fn (Builder $q) => $q->whereDate('created_at', '>=', $this->uploadedFrom))
+                ->when($this->uploadedUntil !== '', fn (Builder $q) => $q->whereDate('created_at', '<=', $this->uploadedUntil));
         });
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Tambah Galeri'),
+            CreateAction::make()->label('Tambah Galeri')->url(GalleryItemResource::getUrl('create')),
+        ];
+    }
+
+    protected function getTableActions(): array
+    {
+        return [
+            Action::make('view')
+                ->label('Lihat')
+                ->icon('heroicon-o-eye')
+                ->color('gray')
+                ->url(fn (\App\Models\GalleryItem $record) => route('gallery.show', $record))
+                ->extraAttributes([
+                    'wire:loading.attr' => 'disabled',
+                    'wire:loading.class' => 'opacity-50',
+                ]),
+            EditAction::make()
+                ->extraAttributes([
+                    'wire:loading.attr' => 'disabled',
+                    'wire:loading.class' => 'opacity-50',
+                ]),
+            DeleteAction::make()
+                ->extraAttributes([
+                    'wire:loading.attr' => 'disabled',
+                    'wire:loading.class' => 'opacity-50',
+                ]),
         ];
     }
 }

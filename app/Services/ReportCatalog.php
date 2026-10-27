@@ -8,12 +8,16 @@ use App\Models\Category;
 use App\Models\CulturalEvent;
 use App\Models\GalleryItem;
 use App\Models\Location;
+use App\Models\ReportDownload;
 use App\Models\User;
+use App\Exports\ReportSheet;
+use App\Exports\ReportsWorkbook;
 use App\Notifications\AdminBroadcastNotification;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class ReportCatalog
 {
@@ -73,71 +77,109 @@ class ReportCatalog
         ];
     }
 
-    public function reports(?string $from, ?string $until): array
+    public function reports(?string $from, ?string $until, ?int $userId = null): array
     {
         $definitions = $this->definitions();
 
         foreach ($definitions as $type => &$definition) {
             $definition['type'] = $type;
             $definition['count'] = $this->query($type, $from, $until)->count();
+            $download = $userId
+                ? ReportDownload::query()
+                    ->where('user_id', $userId)
+                    ->where('report_type', $type)
+                    ->where('period_from', $from)
+                    ->where('period_until', $until)
+                    ->latest('updated_at')
+                    ->first()
+                : null;
+            $definition['status'] = $download?->status ?? 'not_downloaded';
+            $definition['downloaded_at'] = $download?->downloaded_at;
+            $definition['status_label'] = match ($definition['status']) {
+                'processing' => 'Diproses',
+                'completed' => 'Selesai',
+                'failed' => 'Gagal',
+                default => 'Belum Diunduh',
+            };
         }
 
         return array_values($definitions);
     }
 
-    public function download(string $type, ?string $from, ?string $until): StreamedResponse
+    public function download(string $type, ?string $from, ?string $until)
     {
         abort_unless(isset($this->definitions()[$type]), 404);
 
         $definition = $this->definitions()[$type];
-        $query = $this->query($type, $from, $until);
+        $sheet = new ReportSheet(
+            sheetTitle: $this->sheetTitle($definition['title']),
+            fields: $definition['fields'],
+            rows: $this->rows($type, $from, $until),
+        );
 
-        return response()->streamDownload(function () use ($query, $definition, $type): void {
-            $stream = fopen('php://output', 'w');
-            fputcsv($stream, array_values($definition['fields']));
+        $download = $this->beginDownload($type, $from, $until);
 
-            $query->chunkById(200, function ($records) use ($stream, $type, $definition): void {
-                foreach ($records as $record) {
-                    $values = $this->recordValues($record, $type);
-                    fputcsv($stream, array_map(fn (string $field): mixed => $values[$field] ?? '', array_keys($definition['fields'])));
-                }
-            });
+        try {
+            $response = Excel::download($sheet, $this->filename($type, $from, $until));
+            $download->update(['status' => 'completed', 'downloaded_at' => now()]);
 
-            fclose($stream);
-        }, $this->filename($type, $from, $until), ['Content-Type' => 'text/csv; charset=UTF-8']);
+            return $response;
+        } catch (\Throwable $exception) {
+            $download->update(['status' => 'failed']);
+            throw $exception;
+        }
     }
 
     /** @param array<int, string> $types */
-    public function downloadAll(array $types, ?string $from, ?string $until): StreamedResponse
+    public function downloadAll(array $types, ?string $from, ?string $until)
     {
         $definitions = $this->definitions();
         $types = array_values(array_filter($types, fn (string $type): bool => isset($definitions[$type])));
 
-        return response()->streamDownload(function () use ($types, $from, $until, $definitions): void {
-            $stream = fopen('php://output', 'w');
-            fputcsv($stream, ['Jenis Laporan', 'Nomor Data', 'Kolom', 'Nilai']);
+        $sheets = array_map(fn (string $type): ReportSheet => new ReportSheet(
+            sheetTitle: $this->sheetTitle($definitions[$type]['title']),
+            fields: $definitions[$type]['fields'],
+            rows: $this->rows($type, $from, $until),
+        ), $types);
 
-            foreach ($types as $type) {
-                $rowNumber = 0;
-                $this->query($type, $from, $until)->chunkById(200, function ($records) use ($stream, $type, $definitions, &$rowNumber): void {
-                    foreach ($records as $record) {
-                        $rowNumber++;
-                        $values = $this->recordValues($record, $type);
+        $downloads = collect($types)->mapWithKeys(fn (string $type): array => [
+            $type => $this->beginDownload($type, $from, $until),
+        ]);
 
-                        foreach ($definitions[$type]['fields'] as $field => $label) {
-                            fputcsv($stream, [
-                                $definitions[$type]['title'],
-                                $rowNumber,
-                                $label,
-                                is_scalar($values[$field] ?? null) ? ($values[$field] ?? '') : json_encode($values[$field], JSON_UNESCAPED_UNICODE),
-                            ]);
-                        }
-                    }
-                });
-            }
+        try {
+            $response = Excel::download(new ReportsWorkbook($sheets), $this->filename('semua-laporan', $from, $until));
+            $downloads->each(fn (ReportDownload $download) => $download->update(['status' => 'completed', 'downloaded_at' => now()]));
 
-            fclose($stream);
-        }, $this->filename('semua-laporan', $from, $until), ['Content-Type' => 'text/csv; charset=UTF-8']);
+            return $response;
+        } catch (\Throwable $exception) {
+            $downloads->each(fn (ReportDownload $download) => $download->update(['status' => 'failed']));
+            throw $exception;
+        }
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function rows(string $type, ?string $from, ?string $until): array
+    {
+        return $this->query($type, $from, $until)
+            ->get()
+            ->map(fn ($record): array => $this->recordValues($record, $type))
+            ->all();
+    }
+
+    private function beginDownload(string $type, ?string $from, ?string $until): ReportDownload
+    {
+        return ReportDownload::query()->updateOrCreate(
+            [
+                'user_id' => auth()->id(),
+                'report_type' => $type,
+                'period_from' => $from,
+                'period_until' => $until,
+            ],
+            [
+                'status' => 'processing',
+                'downloaded_at' => null,
+            ],
+        );
     }
 
     private function query(string $type, ?string $from, ?string $until): EloquentBuilder|QueryBuilder
@@ -183,6 +225,13 @@ class ReportCatalog
 
     private function filename(string $type, ?string $from, ?string $until): string
     {
-        return sprintf('laporan-%s-%s-sampai-%s.csv', $type, $from ?: 'awal', $until ?: 'sekarang');
+        return sprintf('laporan-%s-%s-sampai-%s.xlsx', $type, $from ?: 'awal', $until ?: 'sekarang');
+    }
+
+    private function sheetTitle(string $title): string
+    {
+        $title = preg_replace('/[\\\\\\/?*\\[\\]:]/', '-', $title) ?: 'Laporan';
+
+        return Str::limit($title, 31, '');
     }
 }

@@ -27,10 +27,7 @@
             </select>
         </div>
 
-        <button type="button" class="resource-filter-reset" wire:click="resetAgencyFilters">
-            <x-filament::icon icon="heroicon-o-arrow-path" />
-            Reset Filter
-        </button>
+        <x-resource-filter-reset action="resetAgencyFilters" />
     </x-resource-filter-toolbar>
 
     <div class="flex flex-col gap-y-6">
@@ -43,6 +40,8 @@
     @once
         <style>
             .agency-filter-toolbar { grid-template-columns: minmax(12rem, 1.35fr) minmax(10rem, 1.15fr) minmax(9rem, 1fr) auto; gap: 2rem; }
+            .agency-page .agency-name-column { width: 30% !important; min-width: 20rem; }
+            .agency-page .agency-email-column { width: 12% !important; max-width: 12rem; }
             @media (max-width: 1023px) {
                 .agency-filter-toolbar { gap: 1.25rem 1.5rem; }
             }

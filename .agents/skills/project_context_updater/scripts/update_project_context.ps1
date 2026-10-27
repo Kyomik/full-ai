@@ -1,22 +1,28 @@
-# PowerShell script to update PROJECT_CONTEXT.md with recent changes
-# This script assumes the repository root is the current working directory.
-# It detects files changed in the most recent commit (or staged changes if no commit yet)
-# and appends a markdown section to PROJECT_CONTEXT.md.
-
 $repoRoot = (git rev-parse --show-toplevel) 2>$null
 if (-not $repoRoot) {
-    Write-Error "Not a git repository."; exit 1
+    Write-Error "Not a git repository."
+    exit 1
 }
 Set-Location $repoRoot
 
-# Get list of changed files from the latest commit
-$changedFiles = git diff --name-only HEAD~1 HEAD
-if (-not $changedFiles) {
-    # If no previous commit, fallback to staged changes
-    $changedFiles = git diff --name-only --cached
+# Determine changed files
+$changedFiles = @()
+try {
+    # Try to get changes from previous commit
+    $changedFiles = git diff --name-only HEAD~1 HEAD 2>$null
+} catch {
+    # Ignore errors
 }
 if (-not $changedFiles) {
-    Write-Host "No changed files detected."; exit 0
+    # If no previous commit or no changes, use staged changes or all files for initial commit
+    $changedFiles = git diff --name-only --cached 2>$null
+    if (-not $changedFiles) {
+        $changedFiles = git ls-files
+    }
+}
+if (-not $changedFiles) {
+    Write-Host "No changed files detected."
+    exit 0
 }
 
 # Group files by extension/type for better readability

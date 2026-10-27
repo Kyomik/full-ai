@@ -4,7 +4,12 @@
             {{ $this->form }}
 
             <div class="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
-                <x-filament::button type="submit" icon="heroicon-o-check">
+                <x-filament::button
+                    type="submit"
+                    icon="heroicon-o-check"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
                     Simpan Perubahan
                 </x-filament::button>
             </div>

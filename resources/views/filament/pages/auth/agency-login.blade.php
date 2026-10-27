@@ -18,7 +18,8 @@
         .agency-login-logo { display: block; width: 3.75rem; height: 3.75rem; margin: 0 auto .5rem; object-fit: contain; }
         .agency-login-inner h2 { margin: 0; text-align: center; font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
         .agency-login-subtitle { max-width: 25rem; margin: .375rem auto 1rem; color: #45484b; text-align: center; font-size: .9rem; line-height: 1.55; }
-        .agency-login-inner .fi-fo-field-wrp-label { font-weight: 600; }
+        .agency-login-inner .fi-fo-field-wrp-label { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; color: #17191b !important; font-weight: 600; }
+        .agency-login-inner .fi-fo-field-wrp-label span { color: #17191b !important; }
         .agency-login-inner .login-remember .fi-fo-field-wrp-label,
         .agency-login-inner .login-remember .fi-fo-field-wrp-label span { color: #25282a !important; }
         .agency-login-inner .login-remember .fi-fo-field-wrp-label { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; }
@@ -28,8 +29,15 @@
         .agency-login-inner input.fi-input:-webkit-autofill { -webkit-text-fill-color: #17191b !important; box-shadow: 0 0 0 1000px #fff inset !important; }
         .agency-login-inner .fi-input-wrp { border-color: #9a9a9a !important; background: #fff !important; }
         .agency-login-inner .fi-input-wrp:focus-within { border-color: #25282a !important; box-shadow: 0 0 0 1px #25282a !important; }
-        .agency-login-forgot { color: #17191b; font-size: .875rem; text-decoration: none; }
-        .agency-login-forgot:hover { text-decoration: underline; }
+        .agency-login-forgot { color: #17191b; font-size: .875rem; text-decoration: underline; text-underline-offset: 2px; }
+        .agency-login-forgot:hover { text-decoration-thickness: 2px; }
+        .login-forgot { color: #17191b; font-size: .875rem; text-decoration: underline; text-underline-offset: 2px; }
+        .login-forgot:hover { text-decoration-thickness: 2px; }
+        .login-remember input[type="checkbox"] { display: inline-grid !important; width: 1rem; height: 1rem; appearance: none; -webkit-appearance: none; place-content: center; border: 1px solid #6b7280; border-radius: .25rem; background: #fff; }
+        .login-remember input[type="checkbox"]::before { width: .6rem; height: .6rem; transform: scale(0); content: '✓'; color: #fff; font-size: .7rem; font-weight: 700; line-height: .6rem; text-align: center; }
+        .login-remember input[type="checkbox"]:checked { border-color: #25282a; background: #25282a; }
+        .login-remember input[type="checkbox"]:checked::before { transform: scale(1); }
+        .login-remember input[type="checkbox"]:focus-visible { outline: 2px solid #6b7280; outline-offset: 2px; }
         .agency-login-submit, .agency-login-register { width: 100%; min-height: 2.65rem; justify-content: center; border: 1px solid #333 !important; border-radius: .5rem; font-weight: 600; }
         .agency-login-submit { margin-top: .875rem; background: #17191b !important; color: #fff !important; }
         .agency-login-submit:hover { background: #343638 !important; }

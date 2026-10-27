@@ -27,10 +27,7 @@
             </select>
         </div>
 
-        <button type="button" class="resource-filter-reset" wire:click="resetLocationFilters">
-            <x-filament::icon icon="heroicon-o-arrow-path" />
-            Reset Filter
-        </button>
+        <x-resource-filter-reset action="resetLocationFilters" />
     </x-resource-filter-toolbar>
 
     <div class="flex flex-col gap-y-6">

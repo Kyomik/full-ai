@@ -1,18 +1,28 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+    const scrollToTopButton = document.querySelector('[data-scroll-to-top]');
+
+    if (scrollToTopButton) {
+        const updateScrollButton = () => {
+            scrollToTopButton.hidden = window.scrollY < 320;
+        };
+
+        window.addEventListener('scroll', updateScrollButton, { passive: true });
+        updateScrollButton();
+
+        scrollToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            });
+        });
+    }
+
     const menuButton = document.querySelector('.nav-toggle');
     const publicNav = document.querySelector('.public-nav');
 
     menuButton?.addEventListener('click', () => {
         const isOpen = publicNav.classList.toggle('is-open');
         menuButton.setAttribute('aria-expanded', String(isOpen));
-    });
-
-    const filterButton = document.querySelector('[data-filter-toggle]');
-    const filters = document.querySelector('.hero-filter');
-
-    filterButton?.addEventListener('click', () => {
-        const isOpen = filters.classList.toggle('is-open');
-        filterButton.setAttribute('aria-expanded', String(isOpen));
     });
 
     document.querySelectorAll('form [data-loading-submit]').forEach((button) => {

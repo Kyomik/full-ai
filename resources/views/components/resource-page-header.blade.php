@@ -5,7 +5,7 @@
     'actions' => [],
 ])
 
-<header {{ $attributes->class(['resource-page-header']) }}>
+<header wire:key="resource-page-header-{{ request()->route()?->getName() ?? 'unknown' }}" {{ $attributes->class(['resource-page-header']) }}>
     <div class="resource-page-heading">
         <h1>{{ $heading }}</h1>
         @if (filled($subheading))
@@ -14,8 +14,11 @@
     </div>
 
     <div class="resource-page-tools">
-        <x-filament::breadcrumbs :breadcrumbs="$breadcrumbs" />
+        <div wire:key="resource-page-breadcrumbs-{{ request()->route()?->getName() ?? 'unknown' }}">
+            <x-filament::breadcrumbs :breadcrumbs="$breadcrumbs" />
+        </div>
         <x-filament::actions :actions="$actions" />
+        {{ $slot }}
     </div>
 </header>
 

@@ -28,8 +28,11 @@ trait BuildsAdminPanel
             ->brandName('Sistem Informasi Festival & Event Budaya Kota Palopo')
             ->simplePageMaxContentWidth('5xl')
             ->sidebarCollapsibleOnDesktop()
-            ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
+            ->spa()
+            ->databaseNotifications(isLazy: true)
+            // The notification bell is present on every panel page. Poll less
+            // often so it does not contend with SPA navigation requests.
+            ->databaseNotificationsPolling('60s')
             ->renderHook(
                 PanelsRenderHook::TOPBAR_START,
                 fn () => view('filament.components.admin-topbar-brand'),
@@ -42,7 +45,15 @@ trait BuildsAdminPanel
                 PanelsRenderHook::STYLES_AFTER,
                 fn () => view('filament.components.breadcrumb-styles'),
             )
-            ->sidebarWidth('12.25rem')
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_END,
+                fn () => view('filament.components.sidebar-logout'),
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn () => view('filament.components.logout-modal'),
+            )
+            ->sidebarWidth('16rem')
             ->navigationGroups([])
             ->colors(['primary' => Color::Green])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -53,7 +64,9 @@ trait BuildsAdminPanel
                 \App\Filament\Widgets\EventSubmissionsChart::class,
                 \App\Filament\Widgets\RecentSubmissions::class,
                 \App\Filament\Widgets\CategoryBreakdown::class,
+                \App\Filament\Widgets\SubmissionStatusBreakdown::class,
                 \App\Filament\Widgets\UpcomingEvents::class,
+                \App\Filament\Widgets\RecentAnnouncements::class,
                 \App\Filament\Widgets\RecentActivity::class,
             ])
             ->middleware([

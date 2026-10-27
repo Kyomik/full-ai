@@ -27,17 +27,10 @@
 
             <div class="resource-filter-field verification-filter-date">
                 <label>Tanggal</label>
-                <div class="resource-filter-date-fields">
-                    <input type="date" aria-label="Tanggal mulai" wire:model.live="submittedFrom">
-                    <span>-</span>
-                    <input type="date" aria-label="Tanggal akhir" wire:model.live="submittedUntil">
-                </div>
+                <x-resource-filter-date-range from="submittedFrom" until="submittedUntil" />
             </div>
 
-            <button type="button" class="resource-filter-reset" wire:click="resetVerificationFilters">
-                <x-filament::icon icon="heroicon-o-arrow-path" />
-                Reset Filter
-            </button>
+            <x-resource-filter-reset action="resetVerificationFilters" />
     </x-resource-filter-panel>
 
     {{ $this->table }}

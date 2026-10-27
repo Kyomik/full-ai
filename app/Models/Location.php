@@ -15,5 +15,10 @@ class Location extends Model
         'tourism' => 'Wisata',
     ];
 
-    protected $fillable = ['name', 'type', 'address', 'province_code', 'regency_code', 'district_code', 'village_code', 'latitude', 'longitude', 'status'];
+    protected $fillable = ['name', 'type', 'address', 'latitude', 'longitude', 'status'];
+
+    public function events()
+    {
+        return $this->hasMany(CulturalEvent::class);
+    }
 }

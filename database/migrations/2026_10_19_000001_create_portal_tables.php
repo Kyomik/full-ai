@@ -46,10 +46,6 @@ return new class extends Migration {
             $table->string('title'); $table->string('file_path'); $table->string('type')->default('photo');
             $table->boolean('is_published')->default(true); $table->timestamps();
         });
-        Schema::create('announcements', function (Blueprint $table) {
-            $table->id(); $table->string('title'); $table->longText('body'); $table->date('published_on')->nullable();
-            $table->boolean('is_published')->default(false); $table->timestamps();
-        });
     }
 
     public function down(): void

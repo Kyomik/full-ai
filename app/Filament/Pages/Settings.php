@@ -2,7 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Resources\AnnouncementResource;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -19,8 +18,12 @@ class Settings extends Page implements HasForms
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationLabel = 'Pengaturan Akun';
     protected static ?string $title = 'Pengaturan Akun';
-    protected static ?int $navigationSort = 11;
     protected static string $view = 'filament.pages.settings';
+
+    public static function getNavigationSort(): ?int
+    {
+        return auth()->user()?->role === 'agency_admin' ? 10 : 11;
+    }
 
     public ?array $data = [];
 
@@ -128,7 +131,6 @@ class Settings extends Page implements HasForms
     protected function getViewData(): array
     {
         return [
-            'announcementUrl' => AnnouncementResource::getUrl('index'),
             'showAdminLinks' => auth()->user()?->role === 'super_admin',
         ];
     }

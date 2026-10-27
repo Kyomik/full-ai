@@ -101,13 +101,14 @@ class VerificationQueue extends Page implements HasTable
                     }),
             ])
             ->actionsColumnLabel('Aksi')
-            ->actionsAlignment('end')
+            ->actionsAlignment('start')
             ->searchable()
             ->actions([
                 Tables\Actions\Action::make('view')
                     ->label('Lihat')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (CulturalEvent $record): string => \App\Filament\Resources\CulturalEventResource::getUrl('edit', ['record' => $record]))
+                    ->color('gray')
+                    ->url(fn (CulturalEvent $record): string => \App\Filament\Resources\CulturalEventResource::getUrl('edit', ['record' => $record, 'from' => 'verification']))
                     ->openUrlInNewTab(false),
                 Tables\Actions\Action::make('approve')->label('Setujui')->icon('heroicon-o-check')->color('success')->visible(fn (CulturalEvent $record): bool => $record->status === 'pending')->requiresConfirmation()->action(function (CulturalEvent $record) {
                     $record->update(['status' => 'approved', 'reviewed_by' => auth()->id(), 'reviewed_at' => now(), 'review_note' => null]);

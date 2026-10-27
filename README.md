@@ -27,11 +27,29 @@ Versi paket dipilih agar cocok dengan PHP yang tersedia di workspace. Untuk mema
 
 5. Buka `/` untuk portal publik dan `/admin` untuk dashboard. Admin instansi mendaftar dari tombol **Ajukan acara**. Reset password mengirim email melalui SMTP Gmail setelah konfigurasi SMTP diisi.
 
+### Menjalankan notifikasi terjadwal
+
+Fitur **Kirim Notifikasi** pada Super Admin dapat mengirim notifikasi sekarang atau menjadwalkannya. Agar notifikasi terjadwal diproses otomatis, buka terminal lain dari folder project dan jalankan:
+
+~~~sh
+php artisan schedule:work
+~~~
+
+Biarkan proses tersebut tetap berjalan selama aplikasi digunakan. Scheduler akan memeriksa jadwal setiap menit dan menjalankan notifications:dispatch-scheduled. Tekan Ctrl + C untuk menghentikannya.
+
+Pada server produksi, scheduler sebaiknya dijalankan melalui cron setiap menit:
+
+~~~cron
+* * * * * cd /path/ke/palopo-budaya && php artisan schedule:run >> /dev/null 2>&1
+~~~
+
+Jika menggunakan Windows Task Scheduler, buat task yang menjalankan php artisan schedule:run setiap satu menit dengan **Start in** diarahkan ke folder project. Pastikan file .env, koneksi database, dan akun SMTP sudah dikonfigurasi sebelum scheduler dijalankan.
+
 ## Modul
 
 - **Publik:** beranda, agenda festival/event, detail acara, kalender, berita, galeri, dan halaman informasi.
 - **Admin instansi:** mendaftar, masuk ke dashboard, membuat dan mengubah pengajuan acara, lalu melihat status dan catatan penolakan.
-- **Super Admin:** mengelola pengajuan acara, kategori, instansi, akun pengelola, berita, galeri, dan pengumuman. Acara hanya tampil setelah disetujui.
+- **Super Admin:** mengelola pengajuan acara, kategori, instansi, akun pengelola, berita, galeri, dan notifikasi. Pengumuman portal dikirim sebagai notifikasi bertipe Pengumuman. Acara hanya tampil setelah disetujui.
 - **Wilayah:** dropdown provinsi, kabupaten/kota, kecamatan, dan kelurahan memakai EMSIFA API. Response disimpan dalam cache tujuh hari. Jika layanan gagal, dropdown mengabarkan kegagalan dan tidak menampilkan data palsu.
 - **Cache lama:** implementasi service worker/PWA sebelumnya tidak lagi didaftarkan karena tombol pemasangan tidak ada pada desain proposal. Browser yang pernah mendaftarkannya akan diminta menghapus worker dan cache lama saat portal dibuka.
 

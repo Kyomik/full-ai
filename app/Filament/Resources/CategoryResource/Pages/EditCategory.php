@@ -13,7 +13,11 @@ class EditCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->disabled(fn (\App\Models\Category $record): bool => $record->events()->exists())
+                ->tooltip(fn (\App\Models\Category $record): ?string => $record->events()->exists()
+                    ? 'Kategori masih dipakai oleh festival atau event. Nonaktifkan kategori jika tidak ingin digunakan lagi.'
+                    : null),
         ];
     }
 }

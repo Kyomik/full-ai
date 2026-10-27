@@ -18,7 +18,8 @@
         .login-form-inner h2 { margin: 0; text-align: center; font-size: 1.35rem; line-height: 1.4; font-weight: 700; }
         .login-subtitle { max-width: 19rem; margin: 6px auto 14px; text-align: center; font-size: .9rem; line-height: 1.5; }
         .login-rule { height: 1px; margin: 12px 0 16px; background: #c4c4c4; }
-        .login-form-inner .fi-fo-field-wrp-label { font-weight: 600; }
+        .login-form-inner .fi-fo-field-wrp-label { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; color: #17191b !important; font-weight: 600; }
+        .login-form-inner .fi-fo-field-wrp-label span { color: #17191b !important; }
         .login-remember .fi-fo-field-wrp-label,
         .login-remember .fi-fo-field-wrp-label span { color: #25282a !important; }
         .login-remember .fi-fo-field-wrp-label { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; }
@@ -28,8 +29,13 @@
         .login-form-inner input.fi-input:-webkit-autofill { -webkit-text-fill-color: #17191b !important; box-shadow: 0 0 0 1000px #fff inset !important; }
         .login-form-inner .fi-input-wrp { border-color: #888 !important; background: #fff !important; }
         .login-form-inner .fi-input-wrp:focus-within { border-color: #25282a !important; box-shadow: 0 0 0 1px #25282a !important; }
-        .login-forgot { color: #17191b; font-size: .8rem; text-decoration: none; }
-        .login-forgot:hover { text-decoration: underline; }
+        .login-forgot { color: #17191b; font-size: .8rem; text-decoration: underline; text-underline-offset: 2px; }
+        .login-forgot:hover { text-decoration-thickness: 2px; }
+        .login-remember input[type="checkbox"] { display: inline-grid !important; width: 1rem; height: 1rem; appearance: none; -webkit-appearance: none; place-content: center; border: 1px solid #6b7280; border-radius: .25rem; background: #fff; }
+        .login-remember input[type="checkbox"]::before { width: .6rem; height: .6rem; transform: scale(0); content: '✓'; color: #fff; font-size: .7rem; font-weight: 700; line-height: .6rem; text-align: center; }
+        .login-remember input[type="checkbox"]:checked { border-color: #25282a; background: #25282a; }
+        .login-remember input[type="checkbox"]:checked::before { transform: scale(1); }
+        .login-remember input[type="checkbox"]:focus-visible { outline: 2px solid #6b7280; outline-offset: 2px; }
         .login-submit, .login-home { width: 100%; min-height: 2.65rem; justify-content: center; border: 1px solid #555 !important; border-radius: 6px; background: #fff !important; color: #17191b !important; font-weight: 600; }
         .login-submit .fi-btn-label, .login-home { color: #17191b !important; }
         .login-submit:hover, .login-home:hover { background: #f4f4f4; }

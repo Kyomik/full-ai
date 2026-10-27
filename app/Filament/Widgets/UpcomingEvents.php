@@ -3,44 +3,30 @@
 namespace App\Filament\Widgets;
 
 use App\Models\CulturalEvent;
-use Filament\Tables;
-use Filament\Widgets\TableWidget;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Widgets\Widget;
 
-class UpcomingEvents extends TableWidget
+class UpcomingEvents extends Widget
 {
-    protected static ?string $heading = 'Event Mendatang';
     protected static ?int $sort = 5;
-    protected int|string|array $columnSpan = [
-        'default' => 1,
-        'md' => 2,
-    ];
+    protected static string $view = 'filament.widgets.upcoming-events';
+    protected int|string|array $columnSpan = ['default' => 1, 'md' => 4];
 
-    protected function getTableQuery(): Builder
+    public static function canView(): bool
     {
-        return CulturalEvent::query()
-            ->with('agency')
-            ->where('status', 'approved')
-            ->whereDate('starts_on', '>=', today())
-            ->orderBy('starts_on');
+        return auth()->user()?->role === 'super_admin';
     }
 
-    protected function getTableColumns(): array
+    protected function getViewData(): array
     {
         return [
-            Tables\Columns\TextColumn::make('starts_on')->label('Tanggal')->date('d M')->weight('bold'),
-            Tables\Columns\TextColumn::make('title')->label('Event')->limit(25),
-            Tables\Columns\TextColumn::make('venue')->label('Lokasi')->limit(22),
+            'events' => CulturalEvent::query()
+                ->with('agency')
+                ->where('status', 'approved')
+                ->whereDate('starts_on', '>=', today())
+                ->orderBy('starts_on')
+                ->limit(3)
+                ->get(),
+            'allEventsUrl' => \App\Filament\Resources\CulturalEventResource::getUrl('index'),
         ];
-    }
-
-    protected function getTableRecordsPerPageSelectOptions(): array
-    {
-        return [3];
-    }
-
-    protected function getDefaultTableRecordsPerPage(): int
-    {
-        return 3;
     }
 }

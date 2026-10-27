@@ -58,7 +58,7 @@
                         Jenis instansi <span>*</span>
                         <select name="agency_type" required>
                             <option value="">Pilih jenis instansi</option>
-                            @foreach (['Pemerintah', 'Komunitas Budaya', 'Sanggar Seni', 'Lembaga Pendidikan', 'Organisasi Masyarakat', 'Lainnya'] as $type)
+                            @foreach ($agencyTypes as $type)
                                 <option value="{{ $type }}" @selected(old('agency_type') === $type)>{{ $type }}</option>
                             @endforeach
                         </select>
@@ -87,18 +87,22 @@
                     <label class="register-field">
                         Provinsi <span>*</span>
                         <select name="region_province" data-region="provinces" data-old-value="{{ old('region_province') }}" required><option value="">Memuat provinsi...</option></select>
+                        <span class="region-loading" data-region-loading hidden><span class="region-spinner" aria-hidden="true"></span> Memuat data wilayah...</span>
                     </label>
                     <label class="register-field">
                         Kabupaten / kota <span>*</span>
                         <select name="region_regency" data-region="regencies" data-old-value="{{ old('region_regency') }}" disabled required><option value="">Pilih provinsi dahulu</option></select>
+                        <span class="region-loading" data-region-loading hidden><span class="region-spinner" aria-hidden="true"></span> Memuat data wilayah...</span>
                     </label>
                     <label class="register-field">
                         Kecamatan <span>*</span>
                         <select name="region_district" data-region="districts" data-old-value="{{ old('region_district') }}" disabled required><option value="">Pilih kabupaten / kota dahulu</option></select>
+                        <span class="region-loading" data-region-loading hidden><span class="region-spinner" aria-hidden="true"></span> Memuat data wilayah...</span>
                     </label>
                     <label class="register-field">
                         Kelurahan / desa <span>*</span>
                         <select name="region_village" data-region="villages" data-old-value="{{ old('region_village') }}" disabled required><option value="">Pilih kecamatan dahulu</option></select>
+                        <span class="region-loading" data-region-loading hidden><span class="region-spinner" aria-hidden="true"></span> Memuat data wilayah...</span>
                     </label>
                     <p class="region-error" data-region-error role="alert" hidden>Pilih provinsi, kabupaten/kota, kecamatan, dan kelurahan. Jika daftar gagal dimuat, muat ulang halaman lalu coba kembali.</p>
                     <label class="register-field register-field-wide">

@@ -6,7 +6,7 @@
 <div class="event-summary">
     <div class="event-summary-poster">
         @if ($record->poster)
-            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($record->poster) }}" alt="Poster {{ $record->title }}">
+            <img src="{{ '/storage/' . ltrim($record->poster, '/') }}" alt="Poster {{ $record->title }}">
         @else
             <x-filament::icon icon="heroicon-o-photo" />
         @endif
@@ -22,7 +22,7 @@
 
 @once
     <style>
-        .event-summary { display: flex; min-width: 16rem; align-items: center; gap: .75rem; }
+        .event-summary { display: flex; width: 100%; min-width: 0; max-width: 18rem; align-items: center; gap: .75rem; }
         .event-summary-poster { display: grid; width: 3.25rem; height: 3.25rem; flex: none; place-items: center; overflow: hidden; border: 1px solid rgb(209 213 219); border-radius: .25rem; background: rgb(249 250 251); color: rgb(107 114 128); }
         .event-summary-poster img { width: 100%; height: 100%; object-fit: cover; }
         .event-summary-poster svg { width: 1.5rem; height: 1.5rem; }

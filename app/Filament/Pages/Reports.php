@@ -12,7 +12,6 @@ use App\Services\ReportCatalog;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Contracts\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Reports extends Page
 {
@@ -58,10 +57,10 @@ class Reports extends Page
 
     protected function getViewData(): array
     {
-        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null);
+        $reports = app(ReportCatalog::class)->reports($this->periodFrom ?: null, $this->periodUntil ?: null, auth()->id());
         $reports = array_values(array_filter($reports, fn (array $report): bool =>
             ($this->reportType === '' || $report['type'] === $this->reportType)
-            && ($this->statusFilter === '' || $this->statusFilter === 'completed')
+            && ($this->statusFilter === '' || $report['status'] === $this->statusFilter)
         ));
 
         return ['reports' => $reports];
@@ -75,12 +74,12 @@ class Reports extends Page
         $this->statusFilter = '';
     }
 
-    public function downloadReport(string $type): StreamedResponse
+    public function downloadReport(string $type)
     {
         return app(ReportCatalog::class)->download($type, $this->periodFrom ?: null, $this->periodUntil ?: null);
     }
 
-    public function downloadAllReports(): StreamedResponse
+    public function downloadAllReports()
     {
         $types = array_column($this->getViewData()['reports'], 'type');
 

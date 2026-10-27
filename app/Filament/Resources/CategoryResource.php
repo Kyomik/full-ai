@@ -24,7 +24,7 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->label('Nama kategori')->required()->maxLength(100),
+                Forms\Components\TextInput::make('name')->label('Nama kategori')->required()->maxLength(100)->unique(ignoreRecord: true),
                 Forms\Components\Textarea::make('description')->label('Deskripsi')->rows(3),
                 Forms\Components\Select::make('status')->label('Status')->options(['active' => 'Aktif', 'inactive' => 'Nonaktif'])->default('active')->required(),
             ]);
@@ -42,11 +42,16 @@ class CategoryResource extends Resource
                     ->color(fn (string $state): string => $state === 'active' ? 'success' : 'gray'),
             ])
             ->actionsColumnLabel('Aksi')
-            ->actionsAlignment('end')
+            ->actionsAlignment('start')
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->label('Edit'),
-                Tables\Actions\DeleteAction::make()->label('Hapus'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Hapus')
+                    ->disabled(fn (Category $record): bool => $record->events()->exists())
+                    ->tooltip(fn (Category $record): ?string => $record->events()->exists()
+                        ? 'Kategori masih dipakai oleh festival atau event. Nonaktifkan kategori jika tidak ingin digunakan lagi.'
+                        : null),
             ])
             ->paginated([6, 12, 24])
             ->defaultPaginationPageOption(6)

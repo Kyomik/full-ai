@@ -3,39 +3,24 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Category;
-use Filament\Widgets\ChartWidget;
 
-class CategoryBreakdown extends ChartWidget
+class CategoryBreakdown extends DonutBreakdown
 {
     protected static ?string $heading = 'Event Berdasarkan Kategori';
-    protected static ?int $sort = 4;
-    protected int|string|array $columnSpan = [
-        'default' => 1,
-        'md' => 2,
-    ];
+    protected int|string|array $columnSpan = ['default' => 1, 'md' => 4];
 
-    protected function getData(): array
+    public static function canView(): bool
     {
-        $user = auth()->user();
-        $query = Category::query()->withCount(['events' => function ($query) use ($user) {
-            if ($user?->role === 'agency_admin') {
-                $query->where('agency_id', $user->agency_id);
-            }
-        }])->orderByDesc('events_count');
-
-        $categories = $query->get();
-
-        return [
-            'labels' => $categories->pluck('name')->all(),
-            'datasets' => [[
-                'data' => $categories->pluck('events_count')->all(),
-                'backgroundColor' => ['#283d30', '#718096', '#a0aec0', '#cbd5e0', '#4a5568', '#d1d5db'],
-            ]],
-        ];
+        return auth()->user()?->role === 'super_admin';
     }
 
-    protected function getType(): string
+    protected function getBreakdown(): array
     {
-        return 'doughnut';
+        return Category::query()
+            ->withCount('events')
+            ->orderByDesc('events_count')
+            ->pluck('events_count', 'name')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
     }
 }

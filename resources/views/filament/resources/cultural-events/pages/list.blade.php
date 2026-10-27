@@ -39,17 +39,10 @@
 
             <div class="resource-filter-field cultural-events-filter-date">
                 <label>Tanggal Event</label>
-                <div class="resource-filter-date-fields">
-                    <input type="date" aria-label="Tanggal mulai" wire:model.live="dateFrom">
-                    <span>-</span>
-                    <input type="date" aria-label="Tanggal akhir" wire:model.live="dateUntil">
-                </div>
+            <x-resource-filter-date-range from="dateFrom" until="dateUntil" />
             </div>
 
-            <button type="button" class="resource-filter-reset" wire:click="resetEventFilters">
-                <x-filament::icon icon="heroicon-o-arrow-path" />
-                Reset Filter
-            </button>
+            <x-resource-filter-reset action="resetEventFilters" />
     </x-resource-filter-panel>
 
     <div class="flex flex-col gap-y-6">

@@ -188,6 +188,10 @@
 .register-form input:focus,.register-form textarea:focus,.register-form select:focus { border-color: #687178; box-shadow: 0 0 0 3px rgba(104, 113, 120, .12); }
 .register-form input::placeholder,.register-form textarea::placeholder { color: #90979c; }
 .register-form select:disabled { opacity: .6; cursor: wait; }
+.region-loading { display: flex; align-items: center; gap: 5px; margin-top: 5px; color: #737a80; font-size: 9px; font-weight: 400; }
+.region-loading[hidden] { display: none; }
+.region-spinner { display: inline-block; width: 10px; height: 10px; border: 1.5px solid #c6cbd0; border-top-color: #303539; border-radius: 50%; animation: region-spin .7s linear infinite; }
+@keyframes region-spin { to { transform: rotate(360deg); } }
 .register-field small { display: block; margin-top: 5px; color: #a33e36; font-size: 10px; font-weight: 400; line-height: 1.4; }
 .register-step-description { margin: -3px 0 20px; color: #737a80; font-size: 11px; line-height: 1.55; }
 .region-error { grid-column: 1 / -1; margin: -5px 0 14px; color: #9b4038; font-size: 10px; line-height: 1.5; }

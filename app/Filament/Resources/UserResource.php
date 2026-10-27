@@ -30,7 +30,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('name')->label('Nama')->required(),
                 Forms\Components\TextInput::make('username')->label('Username')->alphaDash()->maxLength(50)->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord:true),
-                Forms\Components\Select::make('agency_id')->label('Instansi')->relationship('agency','name')->searchable()->preload()->required(fn(Forms\Get $get)=>$get('role')!=='super_admin')->visible(fn(Forms\Get $get)=>$get('role')!=='super_admin'),
+                Forms\Components\Select::make('agency_id')->label('Instansi')->relationship('agency', 'name', modifyQueryUsing: fn (Builder $query) => $query->where('status', 'active'))->searchable()->preload()->required(fn(Forms\Get $get)=>$get('role')!=='super_admin')->visible(fn(Forms\Get $get)=>$get('role')!=='super_admin'),
                 Forms\Components\Select::make('role')->label('Peran')->options(['agency_admin'=>'Admin instansi','super_admin'=>'Super admin'])->required(),
                 Forms\Components\Select::make('status')->label('Status')->options(['active'=>'Aktif','inactive'=>'Nonaktif'])->required(),
                 Forms\Components\TextInput::make('password')->label('Kata sandi baru')->password()->revealable()->minLength(10)->dehydrated(fn($state)=>filled($state))->required(fn(string $operation)=>$operation==='create'),
@@ -45,20 +45,28 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('username')->label('Username')->searchable(),
                 Tables\Columns\TextColumn::make('email')->label('Email')->searchable(),
                 Tables\Columns\TextColumn::make('agency.name')->label('Instansi'),
-                Tables\Columns\TextColumn::make('role')->label('Peran')->badge()->formatStateUsing(fn($state)=>$state==='super_admin'?'Super admin':'Admin instansi'),
-                Tables\Columns\TextColumn::make('status')->badge()->color(fn($state)=>$state==='active'?'success':'gray'),
+                Tables\Columns\TextColumn::make('role')->label('Peran')->badge()
+                    ->formatStateUsing(fn ($state): string => $state === 'super_admin' ? 'Super Admin' : 'Admin Instansi')
+                    ->color(fn (string $state): string => $state === 'super_admin' ? 'warning' : 'info'),
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Aktif' : 'Nonaktif')
+                    ->color(fn (string $state): string => $state === 'active' ? 'success' : 'gray'),
             ])
-            ->filters([
-                //
-            ])
+            ->actionsColumnLabel('Aksi')
+            ->actionsAlignment('start')
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Ubah')
+                    ->color('warning')
+                    ->extraAttributes(['class' => 'user-edit-action']),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([6, 12, 24])
+            ->defaultPaginationPageOption(6);
     }
 
     public static function getRelations(): array

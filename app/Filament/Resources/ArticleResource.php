@@ -54,7 +54,7 @@ class ArticleResource extends Resource
                     ->color(fn (string $state): string => $state === 'Aktif' ? 'success' : 'gray'),
             ])
             ->actionsColumnLabel('Aksi')
-            ->actionsAlignment('end')
+            ->actionsAlignment('start')
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->label('Edit'),

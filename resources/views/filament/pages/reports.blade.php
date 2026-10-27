@@ -16,25 +16,21 @@
 
         <div class="resource-filter-field reports-filter-period">
             <label>Periode</label>
-            <div class="resource-filter-date-fields">
-                <input type="date" aria-label="Tanggal awal periode" wire:model.live="periodFrom">
-                <span>-</span>
-                <input type="date" aria-label="Tanggal akhir periode" wire:model.live="periodUntil">
-            </div>
+            <x-resource-filter-date-range from="periodFrom" until="periodUntil" from-label="Tanggal awal periode" until-label="Tanggal akhir periode" />
         </div>
 
         <div class="resource-filter-field reports-filter-status">
             <label for="report-status">Status</label>
             <select id="report-status" wire:model.live="statusFilter">
                 <option value="">Semua Status</option>
+                <option value="not_downloaded">Belum Diunduh</option>
+                <option value="processing">Diproses</option>
                 <option value="completed">Selesai</option>
+                <option value="failed">Gagal</option>
             </select>
         </div>
 
-        <button type="button" class="resource-filter-reset" wire:click="resetFilters">
-            <x-filament::icon icon="heroicon-o-arrow-path" />
-            Reset Filter
-        </button>
+        <x-resource-filter-reset action="resetFilters" />
     </x-resource-filter-panel>
 
     <section class="reports-table-wrap" aria-label="Daftar laporan">
@@ -80,15 +76,21 @@
                                 {{ $periodUntil ? \Illuminate\Support\Carbon::parse($periodUntil)->translatedFormat('d M Y') : 'Sekarang' }}
                             </td>
                             <td class="reports-description">{{ $report['description'] }}</td>
-                            <td class="reports-created">{{ now()->translatedFormat('d M Y') }}<br>{{ now()->format('H:i') }} WITA</td>
-                            <td><span class="reports-status">Selesai</span></td>
+                            <td class="reports-created">
+                                @if ($report['downloaded_at'])
+                                    {{ $report['downloaded_at']->translatedFormat('d M Y') }}<br>{{ $report['downloaded_at']->format('H:i') }} WITA
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td><span @class(['reports-status', 'is-processing' => $report['status'] === 'processing', 'is-completed' => $report['status'] === 'completed', 'is-failed' => $report['status'] === 'failed'])>{{ $report['status_label'] }}</span></td>
                             <td>
                                 <div class="reports-actions">
-                                    <a class="reports-action" href="{{ $this->reportUrl($report['type']) }}">
+                                    <a class="reports-action" href="{{ $this->reportUrl($report['type']) }}" aria-label="Lihat laporan {{ $report['title'] }}">
                                         <x-filament::icon icon="heroicon-o-eye" />
                                         <span>Lihat</span>
                                     </a>
-                                    <button type="button" class="reports-action" wire:click="downloadReport('{{ $report['type'] }}')">
+                                    <button type="button" class="reports-action" wire:click="downloadReport('{{ $report['type'] }}')" wire:loading.attr="disabled" wire:loading.class="is-action-loading" wire:target="downloadReport('{{ $report['type'] }}')" aria-label="Unduh laporan {{ $report['title'] }}">
                                         <x-filament::icon icon="heroicon-o-arrow-down-tray" />
                                         <span>Unduh</span>
                                     </button>
@@ -123,8 +125,8 @@
             .reports-table th { padding: .875rem .5rem; border-bottom: 1px solid rgb(156 163 175); font-weight: 700; white-space: nowrap; }
             .reports-table td { padding: .875rem .5rem; border-bottom: 1px solid rgb(209 213 219); vertical-align: middle; }
             .reports-number { width: 3rem; }
-            .report-title-cell { display: flex; min-width: 13rem; align-items: flex-start; gap: .75rem; }
-            .report-title-cell > svg { width: 1.375rem; height: 1.375rem; flex: none; margin-top: .1rem; }
+            .report-title-cell { display: flex; min-width: 13rem; align-items: center; gap: .75rem; }
+            .report-title-cell > svg { width: 1.375rem; height: 1.375rem; flex: none; }
             .report-title-cell strong { display: block; font-weight: 700; }
             .report-title-cell p { margin: .25rem 0 0; color: rgb(75 85 99); }
             .report-title-cell small { display: block; margin-top: .25rem; color: rgb(107 114 128); }
@@ -132,7 +134,10 @@
             .reports-period span { display: block; color: rgb(107 114 128); }
             .reports-description { min-width: 11rem; max-width: 15rem; line-height: 1.55; }
             .reports-created { min-width: 6.25rem; white-space: nowrap; }
-            .reports-status { display: inline-flex; border: 1px solid rgb(156 163 175); border-radius: .25rem; padding: .2rem .45rem; font-size: .625rem; white-space: nowrap; }
+            .reports-status { display: inline-flex; border: 1px solid rgb(156 163 175); border-radius: .25rem; padding: .2rem .45rem; color: rgb(75 85 99); font-size: .625rem; white-space: nowrap; }
+            .reports-status.is-processing { border-color: rgb(180 83 9); color: rgb(180 83 9); }
+            .reports-status.is-completed { border-color: rgb(21 128 61); color: rgb(21 128 61); }
+            .reports-status.is-failed { border-color: rgb(185 28 28); color: rgb(185 28 28); }
             .reports-actions { display: flex; align-items: center; justify-content: flex-end; gap: .875rem; }
             .reports-action { display: inline-flex; min-width: 2.5rem; flex-direction: column; align-items: center; gap: .125rem; border: 0; background: transparent; padding: 0; color: rgb(17 24 39); cursor: pointer; text-decoration: none; }
             .reports-action svg { width: 1.125rem; height: 1.125rem; }

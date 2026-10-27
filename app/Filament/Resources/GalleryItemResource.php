@@ -10,6 +10,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class GalleryItemResource extends Resource
 {
@@ -31,11 +33,39 @@ class GalleryItemResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')->label('Judul')->required(),
-                Forms\Components\Select::make('cultural_event_id')->label('Acara')->relationship('event','title')->searchable()->preload(),
-                Forms\Components\Select::make('type')->label('Jenis')->options(['photo' => 'Foto', 'video' => 'Video'])->default('photo')->required()->live(),
-                Forms\Components\FileUpload::make('file_path')->label('Foto / video')->disk('public')->directory('gallery')->acceptedFileTypes(fn (Forms\Get $get): array => $get('type') === 'video' ? ['video/mp4', 'video/webm', 'video/quicktime'] : ['image/jpeg', 'image/png', 'image/webp', 'image/gif'])->required(),
+                Forms\Components\Select::make('cultural_event_id')->label('Acara')->relationship('event', 'title', modifyQueryUsing: fn (Builder $query) => $query->where('status', 'approved'))->searchable()->preload(),
+                Forms\Components\FileUpload::make('file_path')->label('Foto / video')->disk('public')->directory('gallery')->acceptedFileTypes([
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp',
+                    'image/gif',
+                    'video/mp4',
+                    'video/webm',
+                    'video/quicktime',
+                ])->required(),
                 Forms\Components\Toggle::make('is_published')->label('Tampilkan di galeri')->default(true),
             ]);
+    }
+
+    public static function detectMediaType(?string $path): string
+    {
+        if (! $path) {
+            return 'photo';
+        }
+
+        try {
+            $mimeType = Storage::disk('public')->mimeType($path);
+
+            if (is_string($mimeType) && Str::startsWith($mimeType, 'video/')) {
+                return 'video';
+            }
+        } catch (\Throwable) {
+            // Fall back to the file extension when the file is not available yet.
+        }
+
+        return in_array(Str::lower(pathinfo($path, PATHINFO_EXTENSION)), ['mp4', 'webm', 'mov', 'm4v'], true)
+            ? 'video'
+            : 'photo';
     }
 
     public static function table(Table $table): Table
@@ -54,7 +84,7 @@ class GalleryItemResource extends Resource
                     ->color(fn (bool $state): string => $state ? 'success' : 'gray'),
             ])
             ->actionsColumnLabel('Aksi')
-            ->actionsAlignment('end')
+            ->actionsAlignment('start')
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->label('Edit'),

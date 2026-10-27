@@ -4,7 +4,7 @@ namespace App\Filament\Resources\GalleryItemResource\Pages;
 
 use App\Filament\Resources\GalleryItemResource;
 use Filament\Actions;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\Pages\CreateRecord;
 
 class CreateGalleryItem extends CreateRecord
 {
@@ -13,6 +13,7 @@ class CreateGalleryItem extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['uploaded_by_id'] = auth()->id();
+        $data['type'] = GalleryItemResource::detectMediaType($data['file_path'] ?? null);
 
         return $data;
     }

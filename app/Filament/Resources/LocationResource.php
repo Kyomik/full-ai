@@ -26,10 +26,6 @@ class LocationResource extends Resource
             Forms\Components\TextInput::make('name')->label('Nama lokasi')->required(),
             Forms\Components\Select::make('type')->label('Kategori')->options(Location::CATEGORIES)->required(),
             Forms\Components\Textarea::make('address')->label('Alamat')->required()->columnSpanFull(),
-            Forms\Components\Select::make('province_code')->label('Provinsi')->options(fn () => collect(app(\App\Services\IndonesiaRegionService::class)->get('provinces'))->pluck('name', 'id'))->searchable()->live()->afterStateUpdated(fn (Forms\Set $set) => [$set('regency_code', null), $set('district_code', null), $set('village_code', null)]),
-            Forms\Components\Select::make('regency_code')->label('Kabupaten / kota')->options(fn (Forms\Get $get) => $get('province_code') ? collect(app(\App\Services\IndonesiaRegionService::class)->get('regencies', $get('province_code')))->pluck('name', 'id') : [])->searchable()->live()->disabled(fn (Forms\Get $get) => ! $get('province_code'))->afterStateUpdated(fn (Forms\Set $set) => [$set('district_code', null), $set('village_code', null)]),
-            Forms\Components\Select::make('district_code')->label('Kecamatan')->options(fn (Forms\Get $get) => $get('regency_code') ? collect(app(\App\Services\IndonesiaRegionService::class)->get('districts', $get('regency_code')))->pluck('name', 'id') : [])->searchable()->live()->disabled(fn (Forms\Get $get) => ! $get('regency_code'))->afterStateUpdated(fn (Forms\Set $set) => $set('village_code', null)),
-            Forms\Components\Select::make('village_code')->label('Kelurahan / desa')->options(fn (Forms\Get $get) => $get('district_code') ? collect(app(\App\Services\IndonesiaRegionService::class)->get('villages', $get('district_code')))->pluck('name', 'id') : [])->searchable()->disabled(fn (Forms\Get $get) => ! $get('district_code')),
             Forms\Components\TextInput::make('latitude')->numeric(),
             Forms\Components\TextInput::make('longitude')->numeric(),
             Forms\Components\Select::make('status')->options(['active' => 'Aktif', 'inactive' => 'Nonaktif'])->required(),
@@ -52,11 +48,16 @@ class LocationResource extends Resource
                     ->color(fn (string $state): string => $state === 'active' ? 'success' : 'gray'),
             ])
             ->actionsColumnLabel('Aksi')
-            ->actionsAlignment('end')
+            ->actionsAlignment('start')
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->label('Edit'),
-                Tables\Actions\DeleteAction::make()->label('Hapus'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Hapus')
+                    ->disabled(fn (Location $record): bool => $record->events()->exists())
+                    ->tooltip(fn (Location $record): ?string => $record->events()->exists()
+                        ? 'Lokasi masih dipakai oleh festival atau event. Nonaktifkan lokasi jika tidak ingin digunakan lagi.'
+                        : null),
             ])
             ->paginated([5, 10, 20])
             ->defaultPaginationPageOption(5)

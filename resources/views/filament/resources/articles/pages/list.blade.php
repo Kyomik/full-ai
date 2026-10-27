@@ -16,17 +16,10 @@
 
         <div class="resource-filter-field article-filter-date">
             <label>Tanggal Publikasi</label>
-            <div class="resource-filter-date-fields">
-                <input type="date" aria-label="Tanggal publikasi awal" wire:model.live="publishedFrom">
-                <span>-</span>
-                <input type="date" aria-label="Tanggal publikasi akhir" wire:model.live="publishedUntil">
-            </div>
+            <x-resource-filter-date-range from="publishedFrom" until="publishedUntil" from-label="Tanggal publikasi awal" until-label="Tanggal publikasi akhir" />
         </div>
 
-        <button type="button" class="resource-filter-reset" wire:click="resetArticleFilters">
-            <x-filament::icon icon="heroicon-o-arrow-path" />
-            Reset Filter
-        </button>
+        <x-resource-filter-reset action="resetArticleFilters" />
     </x-resource-filter-panel>
 
     <div class="flex flex-col gap-y-6">
