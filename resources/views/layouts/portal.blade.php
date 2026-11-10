@@ -77,12 +77,12 @@
         </div>
     </footer>
 
-    <script src="{{ asset('js/portal.js') }}" defer></script>
+    <script src="{{ asset('js/portal.js') }}?v={{ filemtime(public_path('js/portal.js')) }}" defer></script>
     <script src="{{ asset('js/portal-scroll-reveal.js') }}?v={{ filemtime(public_path('js/portal-scroll-reveal.js')) }}" defer></script>
     @if (request()->routeIs('calendar'))
         <script src="{{ asset('js/portal-calendar-popover.js') }}?v={{ filemtime(public_path('js/portal-calendar-popover.js')) }}" defer></script>
     @endif
-    <script src="{{ asset('js/agency-registration.js') }}" defer></script>
+    <script src="{{ asset('js/agency-registration.js') }}?v={{ filemtime(public_path('js/agency-registration.js')) }}" defer></script>
     @if (session('logout_success'))
         <style>
             .portal-flash { position: fixed; z-index: 100; top: 1rem; right: 1rem; display: flex; align-items: flex-start; gap: .75rem; width: min(calc(100% - 2rem), 26rem); padding: .9rem 1rem; border: 1px solid #bbf7d0; border-radius: .75rem; background: #f0fdf4; color: #166534; box-shadow: 0 8px 20px rgb(22 101 52 / .16); }
