@@ -26,7 +26,7 @@ trait BuildsAdminPanel
             ->login($loginPage)
             ->passwordReset()
             ->brandName('Sistem Informasi Festival & Event Budaya Kota Palopo')
-	    ->favicon(asset('images/palopo-seal.jpeg'))
+	    ->favicon('/images/palopo-seal.jpeg')
             ->simplePageMaxContentWidth('5xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()
